@@ -1,0 +1,764 @@
+Files needed for vcf file creation
+# updated version - 27.02.2024
+
+- Fragmented regions: ref.fa.100K.regions / genome.100kb.regions in D:\p2834_sequencing_FGCZ_20210727\BioNano_scaffolds\freebayes\
+- 1818922_scaffolds_singletons.fasta in D:\p2834_sequencing_FGCZ_20210727\BioNano_scaffolds\
+- All POP.bam populations in D:\p2835_PoolSeq\DNABamStats_34970_2019-03-12--11-20-34\Bowtie2_32576_2020-06-15--17-10-23
+	# remove extension .bam for transfering into Azrael
+
+########################################################################################################################################
+### Creating vcf file using freebayes
+# For 14 populations 
+nohup freebayes-parallel input/genome.100kb.regions 16  -f input/1818922_scaffolds_singletons.fasta --use-best-n-alleles 4 --pooled-continuous input/AMEN.bam  input/ANAC.bam  input/ATRA.bam  input/CAMA.bam  input/CAST.bam  input/CHIU.bam  input/COLL.bam  input/CORO.bam  input/CUMA.bam  input/EPOM.bam  input/FURO.bam  input/MARA.bam  input/POTE.bam  input/PROC.bam  | bgzip -c > parallel_14pop.vcf.gz 2> parallel_freebayes_14pop.log &
+ # to adapt for 20 populations 
+	nohup freebayes /input/ref.fa.100K.regions 16  -f /input/1818922_scaffolds_singletons.fasta --use-best-n-alleles 4 --pooled-continuous /input/AMEN.bam  /input/ANAC.bam  /input/ATRA.bam  /input/CAMA.bam  /input/CAPR.bam  /input/CAST.bam  /input/CETA.bam  /input/CHIU.bam  /input/COLL.bam  /input/CORO.bam  /input/CUMA.bam  /input/DEI.bam  /input/EPOM.bam  /input/FURO.bam  /input/MAGL.bam  /input/MARA.bam  /input/PALI.bam  /input/POTE.bam  /input/PROC.bam  /input/SACC.bam  >> parallel_20pop.vcf 2> parallel_freebayes_20pop.log
+
+########################################################################################################################################
+### Filtering vcf file using vcftools
+# Instal software on server
+# mamba install -c bioconda -c conda-forge -c anaconda vcftools # install vcftools / VCFtools (0.1.16)
+
+# run the filters on server using vcftools
+nohup vcftools --gzvcf  parallel_14pop.vcf.gz --min-alleles 2 --max-alleles 2 --minDP 6 --remove-indels --min-meanDP 6 --max-missing-count 2 --max-meanDP 100 --recode out filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop.vcf
+   # 23 992 314  SNPs
+# keep only the 139 super scallofds and maf 0.07
+vcftools --vcf filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop.vcf --chr Super-Scaffold_1 --chr Super-Scaffold_10 --chr Super-Scaffold_11 --chr Super-Scaffold_12 --chr Super-Scaffold_13 --chr Super-Scaffold_14 --chr Super-Scaffold_15 --chr Super-Scaffold_16 --chr Super-Scaffold_17 --chr Super-Scaffold_18 --chr Super-Scaffold_19 --chr Super-Scaffold_2 --chr Super-Scaffold_20 --chr Super-Scaffold_200000100055 --chr Super-Scaffold_200000100133 --chr Super-Scaffold_200000100155 --chr Super-Scaffold_200000100207 --chr Super-Scaffold_200000100263 --chr Super-Scaffold_200000100326 --chr Super-Scaffold_200000100443 --chr Super-Scaffold_200000100459 --chr Super-Scaffold_200000100486 --chr Super-Scaffold_200000100677 --chr Super-Scaffold_200000100963 --chr Super-Scaffold_200000101000 --chr Super-Scaffold_200000101252 --chr Super-Scaffold_2000001255 --chr Super-Scaffold_2000001751 --chr Super-Scaffold_200000313 --chr Super-Scaffold_200000341 --chr Super-Scaffold_200000454 --chr Super-Scaffold_200000614 --chr Super-Scaffold_21 --chr Super-Scaffold_22 --chr Super-Scaffold_23 --chr Super-Scaffold_24 --chr Super-Scaffold_25 --chr Super-Scaffold_26 --chr Super-Scaffold_27 --chr Super-Scaffold_28 --chr Super-Scaffold_29 --chr Super-Scaffold_3 --chr Super-Scaffold_30 --chr Super-Scaffold_31 --chr Super-Scaffold_32 --chr Super-Scaffold_33 --chr Super-Scaffold_34 --chr Super-Scaffold_35 --chr Super-Scaffold_36 --chr Super-Scaffold_37 --chr Super-Scaffold_38 --chr Super-Scaffold_39 --chr Super-Scaffold_4 --chr Super-Scaffold_40 --chr Super-Scaffold_41 --chr Super-Scaffold_42 --chr Super-Scaffold_43 --chr Super-Scaffold_44 --chr Super-Scaffold_45 --chr Super-Scaffold_46 --chr Super-Scaffold_47 --chr Super-Scaffold_48 --chr Super-Scaffold_49 --chr Super-Scaffold_5 --chr Super-Scaffold_50 --chr Super-Scaffold_51 --chr Super-Scaffold_52 --chr Super-Scaffold_53 --chr Super-Scaffold_54 --chr Super-Scaffold_55 --chr Super-Scaffold_56 --chr Super-Scaffold_57 --chr Super-Scaffold_58 --chr Super-Scaffold_59 --chr Super-Scaffold_6 --chr Super-Scaffold_60 --chr Super-Scaffold_61 --chr Super-Scaffold_62 --chr Super-Scaffold_63 --chr Super-Scaffold_64 --chr Super-Scaffold_65 --chr Super-Scaffold_66 --chr Super-Scaffold_67 --chr Super-Scaffold_68 --chr Super-Scaffold_69 --chr Super-Scaffold_7 --chr Super-Scaffold_70 --chr Super-Scaffold_71 --chr Super-Scaffold_72 --chr Super-Scaffold_73 --chr Super-Scaffold_74 --chr Super-Scaffold_75 --chr Super-Scaffold_76 --chr Super-Scaffold_77 --chr Super-Scaffold_78 --chr Super-Scaffold_79 --chr Super-Scaffold_8 --chr Super-Scaffold_80 --chr Super-Scaffold_81 --chr Super-Scaffold_82 --chr Super-Scaffold_83 --chr Super-Scaffold_84 --chr Super-Scaffold_85 --chr Super-Scaffold_86 --chr Super-Scaffold_87 --chr Super-Scaffold_88 --chr Super-Scaffold_89 --chr Super-Scaffold_9 --chr Super-Scaffold_90 --chr Super-Scaffold_91 --chr Super-Scaffold_92 --chr Super-Scaffold_93 --chr Super-Scaffold_94 --chr Super-Scaffold_95 --chr Super-Scaffold_96 --chr Super-Scaffold_97 --chr Super-Scaffold_100000100249 --chr Super-Scaffold_100000100299 --chr Super-Scaffold_100000100567 --chr Super-Scaffold_100000100708 --chr Super-Scaffold_100000100865 --chr Super-Scaffold_100000100898 --chr Super-Scaffold_100000101119 --chr Super-Scaffold_100000101214 --chr Super-Scaffold_100000101225 --chr Super-Scaffold_100000101245 --chr Super-Scaffold_10000011 --chr Super-Scaffold_1000001130 --chr Super-Scaffold_1000001625 --chr Super-Scaffold_1000001842 --chr Super-Scaffold_100000263 --chr Super-Scaffold_100000366 --chr Super-Scaffold_100000459 --chr Super-Scaffold_100000464 --chr Super-Scaffold_100000604 --chr Super-Scaffold_10000075 --chr Super-Scaffold_100000779 --chr Super-Scaffold_10000098 --chr Super-Scaffold_100000994 --recode --out 139scaffold_filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop.vcf
+	# 21 761 800 SNPs
+
+vcftools --vcf 139scaffold_filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop.vcf --maf 0.07 --recode --out 139scaffold_filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop_maf0-07.vcf
+	# 3 957 822 SNPs
+bgzip -c 139scaffold_filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop_maf0-07.vcf > 139scaffold_filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop_maf0-07.vcf.gz
+
+
+########################################################################################################################################
+### order popualtions
+PROC    AMEN    CORO    MARA    ANAC    ATRA    CAMA    COLL    CUMA    CHIU    EPOM    CAST    FURO    POTE
+# poolsize 
+30 		15 		29 		30 		29 		29 		27 		29 		28 		30 		20 		30 		30 		30
+
+
+########################################################################################################################################
+### Create 19 sub-samples of genome to parrallelise GWA analyses using R 
+# mamba install -c bioconda -c conda-forge -c anaconda r-base # install R 
+#R
+radian 
+
+# mamba install -c bioconda -c conda-forge -c anaconda r-poolfstat # in genetic environment (it didn't work dirrectly in r!!)
+
+#poolfstat package in R environment
+library(poolfstat)
+
+# number of individuals pooled per populations
+poolsizes=c("30", "15", "29", "30", "29", "29", "27", "29", "28", "30", "20", "30", "30", "30")
+poolnames=c("PROC", "AMEN", "CORO", "MARA", "ANAC", "ATRA", "CAMA", "COLL", "CUMA", "CHIU", "EPOM", "CAST", "FURO", "POTE")
+
+pooldata=vcf2pooldata(vcf.file = "139scaffold_filter14pop_biallelic_minDP6_removeIndels_meanDP6_meanDP100_missing2pop_maf0-07.vcf.gz", poolsizes = poolsizes, poolnames = poolnames, min.cov.per.pool = -1, min.rc = 1, max.cov.per.pool = 1000000, min.maf = 0.01, nlines.per.readblock = 1000000)
+
+# Table with read count for reference allele in each pool 
+write.table(pooldata@refallele.readcount, "readcount_14pop.txt", sep="\t", quote=F)
+# Table with coverage in each pool 
+write.table(pooldata@readcoverage, "readCoverage_14pop.txt", sep="\t", quote=F)
+
+#### Function modified in 2023 by Mathieu Gautier as the function form the package doesn't work well
+## start function
+pooldata2genobaypass2=function(pooldata,writing.dir=getwd(),prefix="",subsamplesize=-1,subsamplingmethod="thinning"){
+  if(writing.dir==""){stop("ERROR: Please provide the directory path where to copy the example files  (e.g., set writing.dir=getwd() to copy in the current working directory)")}
+  if(!(is.pooldata(pooldata))) {stop("Data are not formatted as a valid pooldata object...")}
+  subsampling=FALSE
+  if(subsamplesize>1){
+   if(!(subsamplingmethod %in% c("thinning","random"))){stop("subsampling method should either be \"random\" or \"thinning\"")}
+   if(subsamplingmethod=="thinning"){
+     tmp.n=floor(pooldata@nsnp/subsamplesize)
+     cat(tmp.n,"sub-samples of ca.",subsamplesize,"SNPs will be generated by tacking one SNP every",tmp.n,"\n")
+   }else{
+     cat("One sub-samples of",subsamplesize,"randomly chosen SNPs will be generated\n")
+   }
+  subsampling=TRUE  
+  }
+
+  mat.count=matrix(0,pooldata@nsnp,2*pooldata@npools)
+  tmp.id=2*(1:pooldata@npools)-1
+  mat.count[,tmp.id]=pooldata@refallele.readcount
+  mat.count[,(tmp.id+1)]=pooldata@readcoverage - pooldata@refallele.readcount
+  outgenofilename      =paste0(writing.dir,"/genobaypass")
+  outpoolsizefilename  =paste0(writing.dir,"/poolsize")
+  outsnpdetfilename    =paste0(writing.dir,"/snpdet")
+  if(nchar(prefix)>0){
+    outgenofilename=paste0(writing.dir,"/",prefix,".genobaypass")
+    outpoolsizefilename=paste0(writing.dir,"/",prefix,".poolsize")
+    outsnpdetfilename=paste0(writing.dir,"/",prefix,".snpdet")
+  }
+  write.table(file=outpoolsizefilename,t(pooldata@poolsizes),quote=F,col.names=F,row.names=F)
+  if(subsampling){
+    if(subsamplingmethod=="thinning"){
+      tmp.n=floor(pooldata@nsnp/subsamplesize)
+      for(i in 1:tmp.n){
+        tmp.sel=seq(i,pooldata@nsnp,tmp.n)
+        write.table(file=paste0(outsnpdetfilename,".sub",i),pooldata@snp.info[tmp.sel,],quote=F,col.names=F,row.names=F) 
+        write.table(file=paste0(outgenofilename,".sub",i),mat.count[tmp.sel,],quote=F,col.names=F,row.names=F) 
+      }
+    }
+    if(subsamplingmethod=="random"){
+      tmp.sel=sort(sample(1:pooldata@nsnp,subsamplesize))
+      write.table(file=outsnpdetfilename,pooldata@snp.info[tmp.sel,],quote=F,col.names=F,row.names=F) 
+      write.table(file=outgenofilename,mat.count[tmp.sel,],quote=F,col.names=F,row.names=F) 
+      }
+  }else{
+   write.table(file=outsnpdetfilename,pooldata@snp.info,quote=F,col.names=F,row.names=F) 
+   write.table(file=outgenofilename,mat.count,quote=F,col.names=F,row.names=F) 
+  }
+}
+## end function
+
+pooldata2genobaypass2(pooldata, writing.dir = getwd(), prefix = "139Superscafold_14pop", subsamplesize = 208000, subsamplingmethod = "thinning")
+	--> 19 sub-samples of full genomic data. Only one sub-sample dataset is upload here: 208000 * 19 = 3 952 000 SNPs
+		- BayPass allele read count: 139Superscafold_14pop.genobaypass.sub1  to  139Superscafold_14pop_.genobaypass.sub19 
+		- BayPass haploid pool size : 139Superscafold_14pop.snpdet.sub1  to  139Superscafold_14pop_.snpdet.sub19
+
+
+########################################################################################################################################
+### Run GWA using Baypass 
+	# phenotyopic dataset: Column = populations / lines = traits
+	# For PROC where a few traits were missing: wereplaced NA by the mean of the variable among populations 
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub1 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub1 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub1 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub1 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub1 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub1 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub2 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub2 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub2 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub2 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub2 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub2 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub3 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub3 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub3 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub3 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub3 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub3 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub4 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub4 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub4 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub4 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub4 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub4 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub5 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub5 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub5 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub5 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub5 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub5 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub6 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub6 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub6 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub6 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub6 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub6 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub7 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub7 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub7 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub7 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub7 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub7 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub8 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub8 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub8 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub8 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub8 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub8 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub9 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub9 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub9 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub9 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub9 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub9 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub10 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub10 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub10 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub10 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub10 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub10 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub11 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub11 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub11 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub11 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub11 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub11 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub12 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub12 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub12 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub12 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub12 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub12 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub13 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub13 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub13 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub13 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub13 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub13 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub14 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub14 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub14 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub14 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub14 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub14 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub15 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub15 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub15 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub15 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub15 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub15 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub16 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub16 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub16 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub16 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub16 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub16 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub17 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub17 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub17 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub17 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub17 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub17 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub18 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub18 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub18 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub18 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub18 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub18 -nthreads 8 -scalecov &
+
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub19 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_first_sub19 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub19 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_second_sub19 -nthreads 8 -scalecov &
+nohup g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub19 -efile InputGWA/Pheno_seedDispersion14pop -poolsizefile InputGWA/139Superscafold_14pop.poolsize -pilotlength 500 -npilot 15 -burnin 2500 -outprefix results/Dataset14pop_third_sub19 -nthreads 8 -scalecov &
+
+
+########################################################################################################################################
+### Script to concatenate Bayesian Factor (BFis in dB) from different parallised anaylses on 19 sub-samples (sub1 to sub19)
+	#Input: 
+		# resultsGWA/dataset_GEA_labels.txt
+		# InputGWA/139Superscafold_14pop.snpdet.sub1 --->  InputGWA/139Superscafold_14pop.snpdet.sub19 
+		# resultsGWA/Dataset14pop_first_sub1_summary_betai_reg.out   ---> resultsGWA/Dataset14pop_first_sub19_summary_betai_reg.out
+		# resultsGWA/Dataset14pop_second_sub1_summary_betai_reg.out   --->   resultsGWA/Dataset14pop_second_sub19_summary_betai_reg.out
+		# resultsGWA/Dataset14pop_third_sub1_summary_betai_reg.out     ---> resultsGWA/Dataset14pop_third_sub19_summary_betai_reg.out 
+		#[Dataset14_sub1_summary_pi_xtx.out]  # to modifie if XtX
+	# Software: R environment 
+
+# Open files with identity of markers within each sub-samples (sub1 to sub19)
+for(i in 1:19) {
+assign( paste("mrk", i, sep=""), 
+        read.table(paste("InputGWA/139Superscafold_14pop.snpdet.sub", i, sep=""), h=F) )
+}
+
+### concatenation bayes factors files 
+Dataset=read.table("resultsGWA/dataset_GEA_labels.txt", h=T)
+traits=Dataset$Traits
+
+# first repeat
+for(i in 1:19) {
+     assign( paste("sub", i, "first", sep=""), 
+             read.table(paste("resultsGWA/Dataset14pop_first_sub",i,"_summary_betai_reg.out", sep=""), h=T) )
+}
+
+# second repeat
+for(i in 1:19) {
+     assign( paste("sub", i, "second", sep=""), 
+             read.table(paste("resultsGWA/Dataset14pop_second_sub",i,"_summary_betai_reg.out", sep=""), h=T) )
+}
+
+# Third repeat
+for(i in 1:19) {
+     assign( paste("sub", i, "third", sep=""), 
+             read.table(paste("resultsGWA/Dataset14pop_third_sub",i,"_summary_betai_reg.out", sep=""), h=T) )
+}
+
+for (i in 1:length(traits)) {
+  sub1=cbind(sub1first[sub1first$COVARIABLE==i,],sub1second[sub1second$COVARIABLE==i,],sub1third[sub1third$COVARIABLE==i,])
+  sub2=cbind(sub2first[sub2first$COVARIABLE==i,],sub2second[sub2second$COVARIABLE==i,],sub2third[sub2third$COVARIABLE==i,])
+  sub3=cbind(sub3first[sub3first$COVARIABLE==i,],sub3second[sub3second$COVARIABLE==i,],sub3third[sub3third$COVARIABLE==i,])
+  sub4=cbind(sub4first[sub4first$COVARIABLE==i,],sub4second[sub4second$COVARIABLE==i,],sub4third[sub4third$COVARIABLE==i,])
+  sub5=cbind(sub5first[sub5first$COVARIABLE==i,],sub5second[sub5second$COVARIABLE==i,],sub5third[sub5third$COVARIABLE==i,])
+  sub6=cbind(sub6first[sub6first$COVARIABLE==i,],sub6second[sub6second$COVARIABLE==i,],sub6third[sub6third$COVARIABLE==i,])
+  sub7=cbind(sub7first[sub7first$COVARIABLE==i,],sub7second[sub7second$COVARIABLE==i,],sub7third[sub7third$COVARIABLE==i,])
+  sub8=cbind(sub8first[sub8first$COVARIABLE==i,],sub8second[sub8second$COVARIABLE==i,],sub8third[sub8third$COVARIABLE==i,])
+  sub9=cbind(sub9first[sub9first$COVARIABLE==i,],sub9second[sub9second$COVARIABLE==i,],sub9third[sub9third$COVARIABLE==i,])
+  sub10=cbind(sub10first[sub10first$COVARIABLE==i,],sub10second[sub10second$COVARIABLE==i,],sub10third[sub10third$COVARIABLE==i,])
+  sub11=cbind(sub11first[sub11first$COVARIABLE==i,],sub11second[sub11second$COVARIABLE==i,],sub11third[sub11third$COVARIABLE==i,])
+  sub12=cbind(sub12first[sub12first$COVARIABLE==i,],sub12second[sub12second$COVARIABLE==i,],sub12third[sub12third$COVARIABLE==i,])
+  sub13=cbind(sub13first[sub13first$COVARIABLE==i,],sub13second[sub13second$COVARIABLE==i,],sub13third[sub13third$COVARIABLE==i,])
+  sub14=cbind(sub14first[sub14first$COVARIABLE==i,],sub14second[sub14second$COVARIABLE==i,],sub14third[sub14third$COVARIABLE==i,])
+  sub15=cbind(sub15first[sub15first$COVARIABLE==i,],sub15second[sub15second$COVARIABLE==i,],sub15third[sub15third$COVARIABLE==i,])
+  sub16=cbind(sub16first[sub16first$COVARIABLE==i,],sub16second[sub16second$COVARIABLE==i,],sub16third[sub16third$COVARIABLE==i,])
+  sub17=cbind(sub17first[sub17first$COVARIABLE==i,],sub17second[sub17second$COVARIABLE==i,],sub17third[sub17third$COVARIABLE==i,])
+  sub18=cbind(sub18first[sub18first$COVARIABLE==i,],sub18second[sub18second$COVARIABLE==i,],sub18third[sub18third$COVARIABLE==i,])
+  sub19=cbind(sub19first[sub19first$COVARIABLE==i,],sub19second[sub19second$COVARIABLE==i,],sub19third[sub19third$COVARIABLE==i,])
+  
+  sub1$mean_M_Pearson=rowMeans(sub1[,c(3,13,23)]) 
+  sub1$mean_BFdB=rowMeans(sub1[,c(7, 17, 27)])
+  sub1$mean_Beta_is=rowMeans(sub1[,c(8,18,28)])
+  sub2$mean_M_Pearson=rowMeans(sub2[,c(3,13,23)])
+  sub2$mean_BFdB=rowMeans(sub2[,c(7, 17, 27)])
+  sub2$mean_Beta_is=rowMeans(sub2[,c(8,18,28)])
+  sub3$mean_M_Pearson=rowMeans(sub3[,c(3,13,23)])
+  sub3$mean_BFdB=rowMeans(sub3[,c(7, 17, 27)])
+  sub3$mean_Beta_is=rowMeans(sub3[,c(8,18,28)])
+  sub4$mean_M_Pearson=rowMeans(sub4[,c(3,13,23)])
+  sub4$mean_BFdB=rowMeans(sub4[,c(7, 17, 27)])
+  sub4$mean_Beta_is=rowMeans(sub4[,c(8,18,28)])
+  sub5$mean_M_Pearson=rowMeans(sub5[,c(3,13,23)])
+  sub5$mean_BFdB=rowMeans(sub5[,c(7, 17, 27)])
+  sub5$mean_Beta_is=rowMeans(sub5[,c(8,18,28)])
+  sub6$mean_M_Pearson=rowMeans(sub6[,c(3,13,23)])
+  sub6$mean_BFdB=rowMeans(sub6[,c(7, 17, 27)])
+  sub6$mean_Beta_is=rowMeans(sub6[,c(8,18,28)])
+  sub7$mean_M_Pearson=rowMeans(sub7[,c(3,13,23)])
+  sub7$mean_BFdB=rowMeans(sub7[,c(7, 17, 27)])
+  sub7$mean_Beta_is=rowMeans(sub7[,c(8,18,28)])
+  sub8$mean_M_Pearson=rowMeans(sub8[,c(3,13,23)])
+  sub8$mean_BFdB=rowMeans(sub8[,c(7, 17, 27)])
+  sub8$mean_Beta_is=rowMeans(sub8[,c(8,18,28)])
+  sub9$mean_M_Pearson=rowMeans(sub9[,c(3,13,23)])
+  sub9$mean_BFdB=rowMeans(sub9[,c(7, 17, 27)])
+  sub9$mean_Beta_is=rowMeans(sub9[,c(8,18,28)])
+  sub10$mean_M_Pearson=rowMeans(sub10[,c(3,13,23)])
+  sub10$mean_BFdB=rowMeans(sub10[,c(7, 17, 27)])
+  sub10$mean_Beta_is=rowMeans(sub10[,c(8,18,28)])
+  sub11$mean_M_Pearson=rowMeans(sub11[,c(3,13,23)])
+  sub11$mean_BFdB=rowMeans(sub11[,c(7, 17, 27)])
+  sub11$mean_Beta_is=rowMeans(sub11[,c(8,18,28)])
+  sub12$mean_M_Pearson=rowMeans(sub12[,c(3,13,23)])
+  sub12$mean_BFdB=rowMeans(sub12[,c(7, 17, 27)])
+  sub12$mean_Beta_is=rowMeans(sub12[,c(8,18,28)])
+  sub13$mean_M_Pearson=rowMeans(sub13[,c(3,13,23)])
+  sub13$mean_BFdB=rowMeans(sub13[,c(7, 17, 27)])
+  sub13$mean_Beta_is=rowMeans(sub13[,c(8,18,28)])
+  sub14$mean_M_Pearson=rowMeans(sub14[,c(3,13,23)])
+  sub14$mean_BFdB=rowMeans(sub14[,c(7, 17, 27)])
+  sub14$mean_Beta_is=rowMeans(sub14[,c(8,18,28)])
+  sub15$mean_M_Pearson=rowMeans(sub15[,c(3,13,23)])
+  sub15$mean_BFdB=rowMeans(sub15[,c(7, 17, 27)])
+  sub15$mean_Beta_is=rowMeans(sub15[,c(8,18,28)])
+  sub16$mean_M_Pearson=rowMeans(sub16[,c(3,13,23)])
+  sub16$mean_BFdB=rowMeans(sub16[,c(7, 17, 27)])
+  sub16$mean_Beta_is=rowMeans(sub16[,c(8,18,28)])
+  sub17$mean_M_Pearson=rowMeans(sub17[,c(3,13,23)])
+  sub17$mean_BFdB=rowMeans(sub17[,c(7, 17, 27)])
+  sub17$mean_Beta_is=rowMeans(sub17[,c(8,18,28)])
+  sub18$mean_M_Pearson=rowMeans(sub18[,c(3,13,23)])
+  sub18$mean_BFdB=rowMeans(sub18[,c(7, 17, 27)])
+  sub18$mean_Beta_is=rowMeans(sub18[,c(8,18,28)])
+  sub19$mean_M_Pearson=rowMeans(sub19[,c(3,13,23)])
+  sub19$mean_BFdB=rowMeans(sub19[,c(7, 17, 27)])
+  sub19$mean_Beta_is=rowMeans(sub19[,c(8,18,28)])
+ 
+ 
+  tsub1=cbind(mrk1[,c(1:2)],sub1[,c(31,32,33)])
+  tsub2=cbind(mrk2[,c(1:2)],sub2[,c(31,32,33)])
+  tsub3=cbind(mrk3[,c(1:2)],sub3[,c(31,32,33)])
+  tsub4=cbind(mrk4[,c(1:2)],sub4[,c(31,32,33)])
+  tsub5=cbind(mrk5[,c(1:2)],sub5[,c(31,32,33)])
+  tsub6=cbind(mrk6[,c(1:2)],sub6[,c(31,32,33)])
+  tsub7=cbind(mrk7[,c(1:2)],sub7[,c(31,32,33)])
+  tsub8=cbind(mrk8[,c(1:2)],sub8[,c(31,32,33)])
+  tsub9=cbind(mrk9[,c(1:2)],sub9[,c(31,32,33)])
+  tsub10=cbind(mrk10[,c(1:2)],sub10[,c(31,32,33)])
+  tsub11=cbind(mrk11[,c(1:2)],sub11[,c(31,32,33)])
+  tsub12=cbind(mrk12[,c(1:2)],sub12[,c(31,32,33)])
+  tsub13=cbind(mrk13[,c(1:2)],sub13[,c(31,32,33)])
+  tsub14=cbind(mrk14[,c(1:2)],sub14[,c(31,32,33)])
+  tsub15=cbind(mrk15[,c(1:2)],sub15[,c(31,32,33)])
+  tsub16=cbind(mrk16[,c(1:2)],sub16[,c(31,32,33)])
+  tsub17=cbind(mrk17[,c(1:2)],sub17[,c(31,32,33)])
+  tsub18=cbind(mrk18[,c(1:2)],sub18[,c(31,32,33)])
+  tsub19=cbind(mrk19[,c(1:2)],sub19[,c(31,32,33)])
+  
+datafinal=rbind(tsub1,tsub2,tsub3,tsub4,tsub5,tsub6,tsub7,tsub8,tsub9,tsub10,tsub11,tsub12,tsub13,tsub14,tsub15,tsub16,tsub17,tsub18,tsub19)
+  colnames(datafinal)=c("scaffold","pos","M_Pearson","BFdB","Beta_is")
+
+  name=traits[i]
+  
+  write.table(datafinal,paste("resultsGWA/dataset_",name,".txt",sep=""),row.names=F,col.names=T,quote=F)
+    }
+ 
+ 
+ 
+ ########################################################################################################################################
+ ### script Manhattan 
+
+Dataset=read.table("resultsGWA/dataset_GEA_labels.txt", h=T)
+traits=Dataset$Traits
+
+for (trait in traits){
+emmax=read.table(paste("resultsGWA/dataset_",trait,".txt",sep=""), h=T)
+emmax$manhattan=0
+
+emmax$length="NA"
+for (n in 1:length(unique(emmax$scaffold))){ 
+  emmax[emmax$scaffold==unique(emmax$scaffold)[n], which(colnames(emmax)=="length")]=nrow(emmax[emmax$scaffold==unique(emmax$scaffold)[n],])  
+}
+
+emmax=emmax[order(as.numeric(emmax$length), decreasing=T),]
+
+for (c in 1:length(unique(emmax$scaffold))){
+  assign(paste("emmax",c,sep=""),emmax[emmax[,1]==unique(emmax$scaffold)[c],c(1:ncol(emmax))])
+}
+
+emmax[emmax$scaffold==unique(emmax$scaffold)[1],which(colnames(emmax)=="manhattan")]=
+  emmax[emmax$scaffold==unique(emmax$scaffold)[1],which(colnames(emmax)=="pos")]
+for (i in 2:length(unique(emmax$scaffold))){
+  emmax[emmax$scaffold==unique(emmax$scaffold)[i],which(colnames(emmax)=="manhattan")]=
+    emmax[emmax$scaffold==unique(emmax$scaffold)[i],which(colnames(emmax)=="pos")]+max(emmax[emmax$scaffold==unique(emmax$scaffold)[i-1],which(colnames(emmax)=="manhattan")])
+}
+
+emmax$col="NA"
+library(randomcoloR)
+for (i in 1:length(unique(emmax$scaffold))){
+  emmax[emmax$scaffold==unique(emmax$scaffold)[i],which(colnames(emmax)=="col")]=randomColor(1)
+}
+
+
+deb_emmax=min(emmax$manhattan)
+fin_emmax=max(emmax$manhattan)
+
+windowsFonts(
+  A=windowsFont("Calibri")
+)
+
+
+### plot it 
+tiff(paste("resultsGWA/Manhattan/Manhattan_", trait,".tiff",sep=""), res=600, width=25, height=25, unit="cm",compression="lzw") 
+
+m=matrix(1:7,7,1)
+layout(m,c(5),c(1.5,10,1.5,10,1.5,10,3))
+layout.show(7)
+
+par(mar=c(0,0,0,0), ps=8)
+  plot(0,0,xlim=c(0,0.1),ylim=c(0,1),type="n",axes=FALSE,frame.plot=FALSE)
+  text(0.05,0.2,paste(trait, sep=""),cex=1.5)
+par(mar=c(0,2,0.7,0.5),ps=8,mgp=c(0.6,0.3,0))
+  plot(emmax$manhattan,abs(emmax$M_Pearson),xlab="",ylab="Pearson",frame.plot=FALSE,xlim=c(deb_emmax,fin_emmax),axes=FALSE, cex =0.3 ,  col=emmax$col ,pch=16)
+  axis(1,cex.axis=1,lwd=0.5,xaxp=c(deb_emmax,fin_emmax,10),labels=F, tck=0)
+  axis(2,cex.axis=1,lwd=0.5,tck=0.03)
+  box(lwd=0.5)
+par(mar=c(0,0,0,0), ps=8)
+  plot(0,0,xlim=c(0,0.1),ylim=c(0,1),type="n",axes=FALSE,frame.plot=FALSE)
+par(mar=c(0,2,0.7,0.5),ps=8,mgp=c(0.6,0.3,0))
+  plot(emmax$manhattan,emmax$BFdB,xlab="",ylab="BFdB",frame.plot=FALSE,xlim=c(deb_emmax,fin_emmax),axes=FALSE, cex =0.3 ,  col=emmax$col ,pch=16)
+  axis(1,cex.axis=1,lwd=0.5,xaxp=c(deb_emmax,fin_emmax,10),labels=F, tck=0)
+  axis(2,cex.axis=1,lwd=0.5,tck=0.03)
+  box(lwd=0.5)
+par(mar=c(0,0,0,0), ps=8)
+  plot(0,0,xlim=c(0,0.1),ylim=c(0,1),type="n",axes=FALSE,frame.plot=FALSE)
+par(mar=c(0,2,0.7,0.5),ps=8,mgp=c(0.6,0.3,0))
+  plot(emmax$manhattan, abs(emmax$Beta_is),xlab="",ylab="Beta_is",frame.plot=FALSE,xlim=c(deb_emmax,fin_emmax),axes=FALSE, cex =0.3 ,  col=emmax$col ,pch=16)
+  axis(1,cex.axis=1,lwd=0.5,xaxp=c(deb_emmax,fin_emmax,10),labels=F, tck=0)
+  axis(2,cex.axis=1,lwd=0.5,tck=0.03)
+  box(lwd=0.5)
+par(mar=c(0,0.7,0.7,0.5),ps=8,mgp=c(0.6,0.3,0))
+  #plot(0,0,xlim=c(0,1),ylim=c(0,1),type="n",axes=FALSE,frame.plot=FALSE)
+  #text(0.05,0.6,paste("Chr. I", sep=""),cex=1.5,family="A")
+  #text(0.15,0.6,paste("Chr. II", sep=""),cex=1.5,family="A")
+  #text(0.25,0.6,paste("Chr. III", sep=""),cex=1.5,family="A")
+  #text(0.35,0.6,paste("Chr. IV", sep=""),cex=1.5,family="A")
+  #text(0.45,0.6,paste("Chr. V", sep=""),cex=1.5,family="A")
+  #text(0.55,0.6,paste("Chr. VI", sep=""),cex=1.5,family="A")
+  #text(0.65,0.6,paste("Chr. VII", sep=""),cex=1.5,family="A")
+  #text(0.75,0.6,paste("Chr. VIII", sep=""),cex=1.5,family="A")
+  #text(0.85,0.6,paste("Chr. IX", sep=""),cex=1.5,family="A")
+  #text(0.95,0.6,paste("Chr. X", sep=""),cex=1.5,family="A")
+
+dev.off()
+
+}
+
+
+
+
+########################################################################################################################################
+### Performing  local score appraoch on BFDB, including the ranking for pvalue estimation (from Fabriello et al. 2017, Bonhomme et al. 2019)
+	(Input: Dataset5, dataset16)
+	(Output: Dataset17, Dataset18)
+Software: R environment 
+
+# Rank the BFis data to provide a p-value (output not provided) 
+Dataset=read.table("resultsGWA/dataset_GEA_labels.txt", h=T)
+traits=Dataset$Traits
+
+for(trait in traits){
+data=read.table(paste("resultsGWA/dataset_",trait,".txt",sep=""), h=T)
+
+rank=data[order(data$BFdB, decreasing=T),]
+rank$rank=c(1:nrow(rank))
+rank$pval=rank$rank/nrow(rank)
+write.table(rank, paste("resultsGWA/resultsLocSco/Res_pvalue",trait,".txt",sep=""), sep="\t", quote=F, row.names=FALSE)
+}
+
+
+## Local score approach from Fariello et al 2017 & Bonhomme et al. 2019.
+
+library(ggplot2)
+library(data.table)
+library(RColorBrewer)
+library(data.table)
+library(tidyverse)
+
+#Import functions
+# Function available on https://forge-dga.jouy.inra.fr/projects/local-score/
+source('./scorelocalfunctions.R') 
+
+sig_zone_local_score <- function(lindley,pos,th){
+  zones=c(0,0,0,0)	
+  LIND=lindley
+  auxpos=pos
+  while(max(LIND,na.rm=TRUE)>=th){
+    M_loc <- which.max(LIND)
+    if(min(LIND[1:M_loc],na.rm=TRUE)==0){
+      beg_peak <- max(which(LIND[1:M_loc]==min(LIND[1:M_loc],na.rm=TRUE)))+1 #found first 0 before max peak to identify peak start
+    }else{
+      beg_peak <- max(which(LIND[1:M_loc]==min(LIND[1:M_loc],na.rm=TRUE)))
+    }
+    if(length(which(LIND[M_loc+1:length(LIND)]==0))>1){
+      end_peak <- min(which(LIND[M_loc+1:length(LIND)]==min(LIND[M_loc+1:length(LIND)],na.rm=TRUE)))+M_loc #found first 0 after max peak to identify peak end
+    }else{
+      end_peak <- M_loc
+    }
+    zones=rbind(zones, c(auxpos[beg_peak],auxpos[end_peak],auxpos[M_loc],max(LIND)))
+    LIND <- LIND[-(beg_peak:end_peak)]
+    auxpos <- auxpos[-(beg_peak:end_peak)]
+  }
+  zones=matrix(zones, ncol=4)
+  zones=data.table(beg=zones[,1],end=zones[,2],max_zone=zones[,3],peak=zones[,4])
+  if (nrow(zones)>1){zones=zones[-1,]}
+  return(zones)
+}
+
+
+files = list.files("./output/", pattern=".assoc.txt", all.files=FALSE, full.names=FALSE)
+files = tools::file_path_sans_ext(files)
+files = tools::file_path_sans_ext(files)
+
+
+MARF = 0.1
+MISS = 17
+
+for (trait in traits[1:length(traits)]){
+  
+  ### Choice of $\xi$ (1,2,3 or 4).
+  xi=3
+  
+  data=read.table(paste("resultsGWA/resultsLocSco/Res_pvalue",trait,".txt",sep=""), h=T)
+  colnames(data)[colnames(data)=="scaffold"]="chr"
+  mydata=as.data.table(data[,c(which(colnames(data)=="chr"), which(colnames(data)=="pos"), which(colnames(data)=="pval"), which(colnames(data)=="BFdB"))])
+  mydata=mydata[order(mydata$pos, decreasing=F),]
+  
+    setkey(mydata, chr) # for sorting mydata according to chr, the column will be marked as sorted with a key
+    Nchr=length(mydata[,unique(chr)])
+     
+  ### Computation of absolute position in the genome. 
+    #This is useful for doing genomewide plots. 
+    chrInfo=mydata[,.(L=.N,cor=autocor(pval)),chr]
+    setkey(chrInfo,chr)
+    data.table(chr=mydata[,unique(chr),], S=cumsum(c(0,chrInfo$L[-Nchr])))
+    mydata$log_pval = -log10(mydata$pval)
+    
+    mydata[,score:= mydata$log_pval-xi]
+    mean(mydata$score)
+    mydata[,lindley:=lindley(score),chr]
+    
+   # The score mean must be negative, ksi must be chosen between mean and max of -log10(p-value)
+    mean(mydata$log_pval);max(mydata$log_pval)
+    mean(mydata$score)
+    #hist(mydata$score)
+    max(mydata$lindley)
+    
+    # Compute significance threshold for each chromosome
+    ## Uniform distribution of p-values
+    chrInfo[,th:=thresUnif(L, cor, xi),chr]
+    mydata=mydata[chrInfo]
+    sigZones <- mydata[chrInfo,sig_zone_local_score(lindley, pos, unique(th)),chr]
+    sigZones$QTL_length <- sigZones$end - sigZones$beg
+    
+    sigZones <- filter(sigZones,peak>0)
+    
+    sigZonesSNPDens = data.frame()
+    all_SNP_signif_log4 = vector()
+    
+    mydata$signif = round(mydata$lindley-mydata$th,3)
+    mydata$th = round(mydata$th,3)
+    mydata$cor = round(mydata$cor,3)
+    mydata$log_pval = round(mydata$log_pval,6)
+    
+    for (zone in c(1:nrow(sigZones))) {
+      CHR = sigZones$chr[zone]
+      BEG = sigZones$beg[zone]
+      END = sigZones$end[zone]
+      SNP_number_log3 = nrow(mydata[mydata$chr==CHR & mydata$signif>0 & mydata$log_pval>3])
+      SNP_number_log4 = nrow(mydata[mydata$chr==CHR & mydata$signif>0 & mydata$log_pval>4])
+      SNP_number_log5 = nrow(mydata[mydata$chr==CHR & mydata$signif>0 & mydata$log_pval>5])
+      SNP_number_log6 = nrow(mydata[mydata$chr==CHR & mydata$signif>0 & mydata$log_pval>6])
+      subsetzone = cbind(sigZones[zone,],SNP_number_log3 ,SNP_number_log4,SNP_number_log5,SNP_number_log6)
+      sigZonesSNPDens = rbind(sigZonesSNPDens,subsetzone)
+         }
+    
+    
+    results = as.data.frame(cbind(mydata$chr,mydata$pos,mydata$BFdB,mydata$log_pval,mydata$cor,mydata$lindley,mydata$th,mydata$signif))
+    colnames(results) = c("chr","pos","BFdB", "log_pval","cor","lindley","th","signif")
+    
+    write.table(results,file=paste0("resultsGWA/resultsLocSco/Dataset_",trait,"_localscore.txt"),quote=F, sep="\t",row.names=F,)
+    write.table(as.data.frame(sigZonesSNPDens),file=paste0("resultsGWA/resultsLocSco/Dataset_",trait,"_ksi3.txt"),quote=F, sep="\t",row.names=F)
+   
+  }
+
+
+### Manhattan BFdB & local score
+
+Dataset=read.table("resultsGWA/dataset_GEA_labels.txt", h=T)
+traits=Dataset$Traits
+
+
+for (trait in traits){
+emmax=read.table(paste("resultsGWA/dataset_",trait,".txt",sep=""), h=T)
+localSc=read.table(paste("resultsGWA/resultsLocSco/Dataset_",trait,"_localscore.txt",sep=""), h=T)
+emmax$lindley=localSc$lindley
+emmax$manhattan=0
+
+emmax$length="NA"
+for (n in 1:length(unique(emmax$scaffold))){ 
+  emmax[emmax$scaffold==unique(emmax$scaffold)[n], which(colnames(emmax)=="length")]=nrow(emmax[emmax$scaffold==unique(emmax$scaffold)[n],])  
+}
+
+emmax=emmax[order(as.numeric(emmax$length), decreasing=T),]
+
+for (c in 1:length(unique(emmax$scaffold))){
+  assign(paste("emmax",c,sep=""),emmax[emmax[,1]==unique(emmax$scaffold)[c],c(1:ncol(emmax))])
+}
+
+emmax[emmax$scaffold==unique(emmax$scaffold)[1],which(colnames(emmax)=="manhattan")]=
+  emmax[emmax$scaffold==unique(emmax$scaffold)[1],which(colnames(emmax)=="pos")]
+for (i in 2:length(unique(emmax$scaffold))){
+  emmax[emmax$scaffold==unique(emmax$scaffold)[i],which(colnames(emmax)=="manhattan")]=
+    emmax[emmax$scaffold==unique(emmax$scaffold)[i],which(colnames(emmax)=="pos")]+max(emmax[emmax$scaffold==unique(emmax$scaffold)[i-1],which(colnames(emmax)=="manhattan")])
+}
+
+emmax$col="grey"
+#emmax$col="NA"
+#library(randomcoloR)
+#for (i in 1:length(unique(emmax$scaffold))){
+#  emmax[emmax$scaffold==unique(emmax$scaffold)[i],which(colnames(emmax)=="col")]=randomColor(1)
+#}
+
+
+deb_emmax=min(emmax$manhattan)
+fin_emmax=max(emmax$manhattan)
+
+#windowsFonts(
+#  A=windowsFont("Calibri")
+#)
+
+
+### plot it 
+tiff(paste("resultsGWA/Manhattan/ManhattanLocalSc_", trait,".tiff",sep=""), res=600, width=25, height=25, unit="cm",compression="lzw") 
+
+m=matrix(1:5,5,1)
+layout(m,c(5),c(1.5,10,1.5,10,3))
+layout.show(5)
+
+par(mar=c(0,0,0,0), ps=8)
+  plot(0,0,xlim=c(0,0.1),ylim=c(0,1),type="n",axes=FALSE,frame.plot=FALSE)
+  text(0.05,0.2,paste(trait, sep=""),cex=1.5)
+par(mar=c(0,2,0.7,0.5),ps=8,mgp=c(0.6,0.3,0))
+  plot(emmax$manhattan,emmax$BFdB,xlab="",ylab="BFdB",frame.plot=FALSE,xlim=c(deb_emmax,fin_emmax),axes=FALSE, cex =0.3 ,  col=emmax$col ,pch=16)
+  axis(1,cex.axis=1,lwd=0.5,xaxp=c(deb_emmax,fin_emmax,10),labels=F, tck=0)
+  axis(2,cex.axis=1,lwd=0.5,tck=0.03)
+  box(lwd=0.5)
+par(mar=c(0,0,0,0), ps=8)
+  plot(0,0,xlim=c(0,0.1),ylim=c(0,1),type="n",axes=FALSE,frame.plot=FALSE)
+par(mar=c(0,2,0.7,0.5),ps=8,mgp=c(0.6,0.3,0))
+  plot(emmax$manhattan, emmax$lindley,xlab="",ylab="Beta_is",frame.plot=FALSE,xlim=c(deb_emmax,fin_emmax),axes=FALSE, cex =0.3 ,  col=emmax$col ,pch=16)
+  abline(h=mean(localSc$th), col="black")
+  axis(1,cex.axis=1,lwd=0.5,xaxp=c(deb_emmax,fin_emmax,10),labels=F, tck=0)
+  axis(2,cex.axis=1,lwd=0.5,tck=0.03)
+  box(lwd=0.5)
+par(mar=c(0,0.7,0.7,0.5),ps=8,mgp=c(0.6,0.3,0))
+  
+dev.off()
+
+}
+
+
+### XtX 
+### for running 10/10 on Azrael INRAE server
+#tmux attach -t baypass 
+#cat baypassXtX.cmd | parallel --jobs=10  # 
+# ctrl B  , puis d for exit 
+
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub1 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX1 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub2 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX2 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub3 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX3 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub4 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX4 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub5 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX5 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub6 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX6 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub7 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX7 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub8 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX8 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub9 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX9 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub10 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX10 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub11 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX11 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub12 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX12 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub13 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX13 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub14 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX14 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub15 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX15 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub16 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX16 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub17 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX17 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub18 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX18 -nthreads 8 -scalecov
+g_baypass -npop 14 -gfile InputGWA/139Superscafold_14pop.genobaypass.sub19 -poolsizefile InputGWA/139Superscafold_14pop.poolsize  -pilotlength 500 -npilot 15 -burnin 2500 -outprefix resultsGWA/XtX/XtX19 -nthreads 8 -scalecov
+
+
+#### Genes retriever ###### TO CONTINUE
+Dataset=read.table("resultsGWA/dataset_GEA_labels.txt", h=T)
+traits=Dataset$Traits
+
+
+SigZoneTot=as.data.frame(matrix(ncol=12, nrow=0))
+colnames(SigZoneTot)=c("chr", "beg", "end", "max_zone", "peak", "QTL_length", "SNP_number_log3", "SNP_number_log4", "SNP_number_log5", "SNP_number_log6", "variable", "ID")
+
+for(trait in traits){
+SigZone=read.table(paste("resultsGWA/resultsLocSco/Dataset_", trait,"_ksi3.txt",sep=""), h=T)
+SigZone$variable=trait
+SigZone$ID=paste(trait, c(1:nrow(SigZone)), sep="_")
+SigZoneTot=rbind(SigZoneTot, SigZone)
+}
+
+library(dplyr)
+SigZoneTot=SigZoneTot %>% relocate("variable", "ID", .before="chr")
+
+#top=SigZoneTot[SigZoneTot$SNP_number_log3>3,]
+top=SigZoneTot[SigZoneTot$SNP_number_log4>3,] # From 1200 (all SigZones) -->  731 SigZones
+
+
+# run retriever
+library(GenomicRanges)
+
+df_genes=read.table("InputGWA/1818922_scaffolds_singletons.maker.table.simplified_NA.txt", h=T)
+df_genes=na.omit(df_genes)
+df_genes=df_genes[df_genes$type=="gene",] ### only genes (without CDS, exon or mRNA)
+df_genes=df_genes[c(5156:nrow(df_genes)),]  # keep only super-scaffold
+
+df_genes$startNew="NA"
+df_genes$endNew="NA"
+
+### increasing range to the gene down and upstream (line before and)
+for(i in 2:(nrow(df_genes)-1)){
+if(df_genes[i,which(colnames(df_genes)=="scaffold")] == df_genes[i-1,which(colnames(df_genes)=="scaffold")]){
+  df_genes[i,which(colnames(df_genes)=="startNew")]=df_genes[i-1,which(colnames(df_genes)=="start")]}
+  else{df_genes[i,which(colnames(df_genes)=="startNew")]=df_genes[i,which(colnames(df_genes)=="start")]}
+if(df_genes[i,which(colnames(df_genes)=="scaffold")] == df_genes[i+1,which(colnames(df_genes)=="scaffold")]){
+  df_genes[i,which(colnames(df_genes)=="endNew")]=df_genes[i+1,which(colnames(df_genes)=="end")]}
+  else{df_genes[i,which(colnames(df_genes)=="endNew")]=df_genes[i,which(colnames(df_genes)=="end")]}
+}
+df_genes[1, which(colnames(df_genes)=="startNew")]=df_genes[1, which(colnames(df_genes)=="start")]
+df_genes[1, which(colnames(df_genes)=="endNew")]=df_genes[2, which(colnames(df_genes)=="end")]
+df_genes[nrow(df_genes), which(colnames(df_genes)=="startNew")]=df_genes[nrow(df_genes)-1,which(colnames(df_genes)=="start")]
+df_genes[nrow(df_genes), which(colnames(df_genes)=="endNew")]=df_genes[nrow(df_genes), which(colnames(df_genes)=="end")]
+df_genes$startNew=as.numeric(df_genes$startNew)
+df_genes$endNew=as.numeric(df_genes$endNew)
+
+# list top SNPs
+data=top
+
+# retriver within the significant sigZone
+library(dplyr)
+data_ATG = select(df_genes,identifier)
+
+data_tot_ATG = data.frame()
+
+subset=data
+
+gr1 <- with(subset, GRanges(chr, IRanges(start=beg, end=end, names=ID), SNP=ID))
+#gr2 <- with(df_genes, GRanges(scaffold, IRanges(start=start, end=end, names=identifier), ATG=identifier))
+gr2 <- with(df_genes, GRanges(scaffold, IRanges(start=startNew, end=endNew, names=identifier), ATG=identifier))
+ranges <- subsetByOverlaps(gr2,gr1)
+hits <- findOverlaps(gr2, gr1)
+rsid <- CharacterList(split(names(gr1)[subjectHits(hits)], queryHits(hits)))
+mcols(ranges) <- DataFrame(mcols(ranges), rsid)
+ranges
+
+df = as.data.frame(mcols(ranges))
+colnames(df) <- c("identifier", "ID")
+
+
+# write tables 
+df <- apply(df,2,as.character)
+write.table(df,  paste("resultsGWA/RetrievalGenes/Identifier_log4Sup3_down_upstream_genes.txt", sep=""), col.names=T, row.names=F, quote=F, sep="\t")
+
+### Find genes associated to Brassica incana identifier
+# using Identifier_transcript.txt for transcript  &  list_ID_GO_terms_incana for GO
+# https://geneontology.org/ for GO terms or https://pantherdb.org/ or TAIR 
+
+
+
+
